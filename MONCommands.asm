@@ -26,6 +26,7 @@ HLPMSGp: DEFB 'P - print port scan (00-FF)', 0Dh, 0Ah, EOS
 HLPMSGr: DEFB 'R - monitor reset', 0Dh, 0Ah, EOS
 HLPMSGs: DEFB 'S - calculate checksum for memory range', 0Dh, 0Ah, EOS
 HLPMSGz: DEFB 'Z - dump user registers (STEP)', 0Dh, 0Ah, EOS
+HLPMSGi: DEFB 'I - read I/O port', 0Dh, 0Ah, EOS
 HLPMSG7: DEFB ': - download intel hex', 0Dh, 0Ah, EOS
 HLPMSG8: DEFB '+ - print next block of memory', 0Dh, 0Ah, EOS
 HLPMSG9: DEFB '- - print previous block of memory', 0Dh, 0Ah, EOS
@@ -57,6 +58,8 @@ HELP_COMMAND:
         LD      HL, HLPMSGs
         CALL    PRINT_STRING
         LD      HL, HLPMSGz
+        CALL    PRINT_STRING
+        LD      HL, HLPMSGi
         CALL    PRINT_STRING
         LD      HL, HLPMSG7
         CALL    PRINT_STRING
@@ -718,3 +721,29 @@ REGDUMP_COMMAND:
 REGDMPJ:
         CALL    REGDUMP_COMMAND
         JP      MPFMON  ; return to monitor
+
+
+;***************************************************************************
+; I/O Port Input
+;***************************************************************************
+
+IN_1:   DEFB    'Port Input Command', 0Dh, 0Ah, EOS
+IN_2:   DEFB    'Port to read in 2 digit HEX: ', EOS
+
+IN_COMMAND:
+        LD      HL, IN_1
+        CALL    PRINT_STRING
+
+        LD      HL, IN_2
+        CALL    PRINT_STRING            ; Prompt from address
+        CALL    GETHEXBYTE
+        CALL    PRINT_NEW_LINE
+        LD      C, A
+        LD      A, (ERRFLAG)
+        CP      E_NONE                  ; Is it good?
+        RET     NZ
+
+        IN      A,(C)                   ; Get the value
+        CALL    PRINTHBYTE              ; Print it out
+        XOR     A
+        RET
