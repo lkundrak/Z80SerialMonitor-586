@@ -27,6 +27,7 @@ HLPMSGr: DEFB 'R - monitor reset', 0Dh, 0Ah, EOS
 HLPMSGs: DEFB 'S - calculate checksum for memory range', 0Dh, 0Ah, EOS
 HLPMSGz: DEFB 'Z - dump user registers (STEP)', 0Dh, 0Ah, EOS
 HLPMSGi: DEFB 'I - read I/O port', 0Dh, 0Ah, EOS
+HLPMSGo: DEFB 'O - write I/O port', 0Dh, 0Ah, EOS
 HLPMSG7: DEFB ': - download intel hex', 0Dh, 0Ah, EOS
 HLPMSG8: DEFB '+ - print next block of memory', 0Dh, 0Ah, EOS
 HLPMSG9: DEFB '- - print previous block of memory', 0Dh, 0Ah, EOS
@@ -60,6 +61,8 @@ HELP_COMMAND:
         LD      HL, HLPMSGz
         CALL    PRINT_STRING
         LD      HL, HLPMSGi
+        CALL    PRINT_STRING
+        LD      HL, HLPMSGo
         CALL    PRINT_STRING
         LD      HL, HLPMSG7
         CALL    PRINT_STRING
@@ -745,5 +748,41 @@ IN_COMMAND:
 
         IN      A,(C)                   ; Get the value
         CALL    PRINTHBYTE              ; Print it out
+        XOR     A
+        RET
+
+
+;***************************************************************************
+; I/O Port Output
+;***************************************************************************
+
+OUT_1:  DEFB    'Port Output Command', 0Dh, 0Ah, EOS
+OUT_2:  DEFB    'Port to write to in 2 digit HEX: ', EOS
+OUT_3:  DEFB    'Value to write to the port in 2 digit HEX: ', EOS
+
+OUT_COMMAND:
+        LD      HL, OUT_1
+        CALL    PRINT_STRING
+
+        LD      HL, OUT_2
+        CALL    PRINT_STRING            ; Prompt for address
+        CALL    GETHEXBYTE
+        CALL    PRINT_NEW_LINE
+        LD      C, A
+        LD      A, (ERRFLAG)
+        CP      E_NONE                  ; Address good?
+        RET     NZ
+
+        PUSH    BC                      ; Preserve address
+        LD      HL, OUT_3
+        CALL    PRINT_STRING            ; Prompt for value
+        CALL    GETHEXBYTE
+        POP     BC
+        LD      B, A
+        LD      A, (ERRFLAG)
+        CP      E_NONE                  ; Value good?
+        RET     NZ
+
+        OUT     (C),B                   ; Write it!
         XOR     A
         RET

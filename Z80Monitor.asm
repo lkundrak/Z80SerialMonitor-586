@@ -244,6 +244,8 @@ MON_COMMAND:    ; Inserted ERROR_CHK for all commands requiring input
         CALL    Z,EDIT_COMMAND
         CP      'I'
         CALL    Z,IN_COMMAND
+        CP      'O'
+        CALL    Z,OUT_COMMAND
         CP      ':'
         CALL    Z,HEXI_COMMAND
         CP      'S'
