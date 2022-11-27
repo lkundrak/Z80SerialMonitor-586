@@ -11,6 +11,17 @@
 ;***************************************************************************
 
 UART_INIT:
+        ; Initialize the CTC timer first
+        LD      C, TIMER_BASE + 3
+        LD      A, 0B6h
+        OUT     (C), A
+        DEC     C
+        LD      A, TIMER_BASE + 1
+        OUT     (C), A
+        XOR     A
+        OUT     (C), A
+
+        ; Initialize the SIO
         LD      HL, SIO_INIT
         LD      C, UART_BASE + 1
         LD      B, E_SIO_INIT - SIO_INIT

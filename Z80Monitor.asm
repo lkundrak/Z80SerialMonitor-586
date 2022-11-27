@@ -125,6 +125,15 @@ UART2:      EQU    (UART_BASE & 00Fh) / 1h   + '0'
             ENDIF
 
 			ORG ROM_BOTTOM
+		DI
+		JP	MAIN
+
+		ORG ROM_BOTTOM + 56
+		RETI
+
+		ORG ROM_BOTTOM + 119
+		RETI
+
 ROUTINES:
 R_MAIN:         JP      MAIN            ; init DART and starts command loop
 R_U_INIT:       JP      UART_INIT       ; configures DARTchannel B 
@@ -135,7 +144,7 @@ R_PRT_STR:      JP      PRINT_STRING    ; sends a NULL terminated string
                 DEFS    3
                 DEFS    3
             
-            ORG ROM_BOTTOM + 24     ; room for eight routine entries
+;            ORG ROM_BOTTOM + 24     ; room for eight routine entries
 ;***************************************************************************
 ;MAIN
 ;Function: Entrance to user program
@@ -174,16 +183,17 @@ RESET_COMMAND:
 ;PRINT_MON_HDR
 ;Function: Print out program header info
 ;***************************************************************************
-MNMSG1:     DEFB    0DH, 0Ah, 'ZMC80 Computer', 09h, 09h, 09h, '2015 MCook', EOS
-MNMSG2:     DEFB    0DH, 0Ah, ' adaptation to MPF-1 / Z80 DART', 09h, '2022 F.J.Kraan', 0Dh, 0Ah, EOS
-MNMSG3:     DEFB    'Monitor v', VERSMYR, '.', VERSMIN, 
-            DEFB    ' ROM: ', ROMB1, ROMB2, ROMB3, ROMB4
-            DEFB    'h DART: ', UART1, UART2, 'h', 0Dh, 0AH, 0Dh, 0AH, EOS
+MNMSG1:	DEFB 0DH, 0Ah, 'Altos 586 IOP Debug Monitor ', VERSMYR, '.', VERSMIN, 0Dh, 0Ah, EOS
+MNMSG2:	DEFB '<https://github.com/lkundrak/altos586/>', 0Dh, 0Ah, EOS
+MNMSG3:	DEFB '2015 MCook, '
+	DEFB '2022 F.J.Kraan, '
+	DEFB '2022 Lubomir Rintel'
+	DEFB 0Dh, 0Ah, 0Dh, 0Ah, EOS
 MONHLP:     DEFB    09h,' Input ? for command list', 0Dh, 0AH, EOS
 MONERR:     DEFB    0Dh, 0AH, 'Error in params: ', EOS
 
 PRINT_MON_HDR:
-        CALL    CLEAR_SCREEN        ;Clear the terminal screen
+        ;CALL    CLEAR_SCREEN        ;Clear the terminal screen
         LD      HL, MNMSG1          ;Print some messages
         CALL    PRINT_STRING
         LD      HL, MNMSG2          ;Print some extra message
@@ -271,9 +281,10 @@ CLEAR_ERROR:
         POP     AF
         RET
         
-        INCLUDE	DARTDriver.asm
+        INCLUDE	SIODriver.asm
+;        INCLUDE	DARTDriver.asm
         INCLUDE	MONCommands.asm
         INCLUDE	CONIO.asm
-        INCLUDE CFDriver.asm
+;        INCLUDE CFDriver.asm
 
         END
